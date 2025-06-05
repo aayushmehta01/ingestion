@@ -38,3 +38,38 @@ Submit a list of IDs for processing.
   "ids": [1, 2, 3, 4, 5],
   "priority": "HIGH"
 }
+```
+
+**Response Body:**
+
+```json
+{
+  "ingestion_id": "abc123"
+}
+```
+
+### 2. **GET /status/**
+
+Check status of an ingestion request.
+
+**Response Body:**
+
+```json
+{
+  "ingestion_id": "abc123",
+  "status": "triggered",
+  "batches": [
+    {
+      "batch_id": "uuid-1",
+      "ids": [1, 2, 3],
+      "status": "completed"
+    },
+    {
+      "batch_id": "uuid-2",
+      "ids": [4, 5],
+      "status": "triggered"
+    }
+  ]
+}
+```
+
