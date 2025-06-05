@@ -1,27 +1,28 @@
+
 # 🚀 Data Ingestion API System
 
-This project implements a simple RESTful API system to ingest and track the processing of data IDs. It simulates external API calls, processes IDs in batches, enforces a rate limit, and respects priority-based ordering.
+This project implements a RESTful API system to handle data ingestion requests. The system supports batch processing with rate limiting and prioritization of tasks based on their priority level.
 
 ---
 
 ## 📌 Features
 
-- Submit ingestion jobs with priority (`HIGH`, `MEDIUM`, `LOW`)
-- Asynchronous batch processing (3 IDs per batch)
-- Priority queue: HIGH > MEDIUM > LOW
-- Rate limit: 1 batch per 5 seconds
-- Track ingestion and batch processing status
-- Mocked external API with simulated delay
+- Submit ingestion jobs with ID arrays and a priority (`HIGH`, `MEDIUM`, `LOW`)
+- Process jobs in asynchronous batches of up to 3 IDs
+- Enforce a processing rate limit: 1 batch every 5 seconds
+- Prioritize high-priority tasks over medium and low
+- Simulated external API call (mocked with delay)
+- Check the status of each ingestion job and its batches
 
 ---
 
 ## 🛠 Tech Stack
 
-- Node.js
-- Express.js
-- UUID for batch/job IDs
-- In-memory store for status tracking
-- Jest & Supertest for testing
+- **Backend**: Node.js, Express.js
+- **Async Processing**: Custom job queue with setInterval
+- **Status Tracking**: In-memory store
+- **Testing**: Jest, Supertest
+- **UUIDs**: For unique batch and ingestion IDs
 
 ---
 
@@ -29,9 +30,9 @@ This project implements a simple RESTful API system to ingest and track the proc
 
 ### 1. **POST /ingest**
 
-Submit a list of IDs for processing.
+Submit a new ingestion request.
 
-**Request Body:**
+#### Request
 
 ```json
 {
@@ -40,7 +41,10 @@ Submit a list of IDs for processing.
 }
 ```
 
-**Response Body:**
+- `ids`: List of integers between 1 and 10^9+7
+- `priority`: "HIGH", "MEDIUM", or "LOW"
+
+#### Response
 
 ```json
 {
@@ -48,11 +52,13 @@ Submit a list of IDs for processing.
 }
 ```
 
-### 2. **GET /status/**
+---
 
-Check status of an ingestion request.
+### 2. **GET /status/:ingestion_id**
 
-**Response Body:**
+Retrieve the current status of an ingestion request.
+
+#### Example Response
 
 ```json
 {
@@ -60,12 +66,12 @@ Check status of an ingestion request.
   "status": "triggered",
   "batches": [
     {
-      "batch_id": "uuid-1",
+      "batch_id": "uuid1",
       "ids": [1, 2, 3],
       "status": "completed"
     },
     {
-      "batch_id": "uuid-2",
+      "batch_id": "uuid2",
       "ids": [4, 5],
       "status": "triggered"
     }
@@ -73,3 +79,35 @@ Check status of an ingestion request.
 }
 ```
 
+#### Status Logic
+
+- Batch-level: `yet_to_start`, `triggered`, `completed`
+- Ingestion-level:
+  - All batches `yet_to_start` → `yet_to_start`
+  - At least one `triggered` → `triggered`
+  - All batches `completed` → `completed`
+
+---
+
+## ⚙️ How It Works
+
+1. IDs are split into batches of 3.
+2. Each batch is assigned a unique ID and queued.
+3. The queue respects priority and creation time.
+4. A background processor handles 1 batch every 5 seconds.
+5. Each ID is processed with a mocked delay (simulating external API).
+
+---
+
+## 🧪 Running Locally
+
+```bash
+git clone https://github.com/aayushmehta01/ingestion
+cd ingestion
+npm install
+node server.js
+```
+
+App runs on `http://localhost:5000`
+
+---
